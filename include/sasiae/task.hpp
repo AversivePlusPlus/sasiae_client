@@ -19,10 +19,9 @@
 #ifndef TASK_HPP
 #define TASK_HPP
 
-#include <base/integer.hpp>
+#include <stdint.h>
 
 namespace SASIAE {
-  using namespace ::Aversive::Base;
   using namespace ::Aversive;
 
   typedef void(*TaskFunc)(void);
@@ -32,8 +31,8 @@ namespace SASIAE {
   protected:
     TaskFunc _func;
     
-    u32 _period;
-    u8 _priority;
+	uint32_t _period;
+	uint8_t _priority;
     bool _unique;
 
   public:
@@ -63,7 +62,7 @@ namespace SASIAE {
     }
 
     //! \brief Set the interval of time during two task call (in microseconds)
-    inline void setPeriod(u32 period_us) {
+	inline void setPeriod(uint32_t period_us) {
       _period = period_us;
     }
 
@@ -74,7 +73,7 @@ namespace SASIAE {
     called is the one with the greatest priority
 
   */
-    inline void setPriority(u8 priority) {
+	inline void setPriority(uint8_t priority) {
       _priority = priority;
     }
 
@@ -88,7 +87,7 @@ namespace SASIAE {
       _unique = true;
     }
 
-    inline u32 period(void) const {
+	inline uint32_t period(void) const {
       return _period;
     }
 

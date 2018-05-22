@@ -18,8 +18,7 @@
 #ifndef SASIAE_ASYNCHRONOUS_UPDATER_HPP
 #define SASIAE_ASYNCHRONOUS_UPDATER_HPP
 
-#include <base/singleton.hpp>
-#include <device/asynchronous.hpp>
+#include <sasiae/utils/singleton.hpp>
 #include <sasiae/task_manager.hpp>
 
 namespace SASIAE {
@@ -38,18 +37,18 @@ namespace SASIAE {
     template<typename Sync, typename Prev>
     class _AsynchronousUpdaterConstructor : public Prev {
       Sync& _s;
-      u32 _t;
+	  uint32_t _t;
 
     public:
       static constexpr int ID = Prev::ID+1;
 
-      _AsynchronousUpdaterConstructor(Sync& s, u32 t, Prev& p)
+	  _AsynchronousUpdaterConstructor(Sync& s, uint32_t t, Prev& p)
         : Prev(p), _s(s), _t(t) {
       }
 
       template<typename _Sync>
       _AsynchronousUpdaterConstructor<_Sync, _AsynchronousUpdaterConstructor<Sync, Prev>>
-      build(_Sync& s, u32 t) {
+	  build(_Sync& s, uint32_t t) {
         return _AsynchronousUpdaterConstructor<_Sync,  _AsynchronousUpdaterConstructor<Sync, Prev>>(s, t, *this);
       }
 
@@ -73,7 +72,7 @@ namespace SASIAE {
   public:
     template<typename Sync>
     _AsynchronousUpdaterConstructor<Sync, AsynchronousUpdaterConstructor>
-    build(Sync& s, u32 t) {
+	build(Sync& s, uint32_t t) {
       return _AsynchronousUpdaterConstructor<Sync, AsynchronousUpdaterConstructor>(s, t, *this);
     }
 

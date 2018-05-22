@@ -28,8 +28,6 @@
 
 #include <sasiae/device.hpp>
 
-#include <base/integer.hpp>
-
 namespace SASIAE {
 
   //! \brief ClientThread handles the communication between SASIAE and the different devices

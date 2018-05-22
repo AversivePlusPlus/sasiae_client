@@ -21,29 +21,26 @@
 
 #include <sasiae/aversive.hpp>
 #include <sasiae/client_thread.hpp>
-
-#include <device/input.hpp>
+#include <sasiae/device.hpp>
 
 #include <sstream>
+#include <stdint.h>
 
 namespace Aversive {
 namespace Device {
   namespace SASIAE {
-    using namespace Aversive::Base;
-
-    class Encoder : public ::SASIAE::Device, public Aversive::Device::Input<s32> {
+	class Encoder : public ::SASIAE::Device {
     private:
-      s32 _val;
+	  int32_t _val;
 
     public:
-      void get_value_from_msg(s32* dest, const char* msg) {
+	  void get_value_from_msg(int32_t* dest, const char* msg) {
         long long in;
-        sscanf(msg, "%lld", &in);
-        *dest = (s32)in;
+		sscanf(msg, "%lld", &in);
+		*dest = (int32_t)in;
       }
 
-      Encoder(const char* name)
-        : ::SASIAE::Device(name) {
+	  Encoder(const char* name) : Device(name) {
 
         ::SASIAE::Aversive::init();
         _val = 0;
@@ -74,7 +71,7 @@ namespace Device {
             sendDeviceMessage(*this, "init");
       }
 
-      s32 get(void) {
+	  int32_t get(void) {
         return _val;
       }
 

@@ -19,11 +19,10 @@
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
-#include <base/integer.hpp>
-#include <base/singleton.hpp>
+#include <sasiae/utils/singleton.hpp>
 
-#include <container/simple/heap.hpp>
-#include <container/list.hpp>
+#include <sasiae/utils/heap.hpp>
+#include <sasiae/utils/list.hpp>
 
 #include <sasiae/task.hpp>
 
@@ -48,7 +47,7 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
   //! \brief A task with more information used by the scheduler
   class PrivateTask : public Task {
   private:
-    u32 _next_call;
+	uint32_t _next_call;
   public:
     //! \brief Default constructor
     PrivateTask(void)
@@ -79,7 +78,7 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
     }
 
     //! \brief Get the next call date
-    u32 nextCall(void) const {
+	uint32_t nextCall(void) const {
       return _next_call;
     }
 
@@ -89,12 +88,12 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
     }
 
     //! \brief Add a value to the next call date
-    void setNextCall(u32 val) {
+	void setNextCall(uint32_t val) {
       _next_call += val;
     }
 
     //! \brief Return the priority of the task
-    u8 priority(void) {
+	uint8_t priority(void) {
       return _priority;
     }
   };
@@ -123,13 +122,13 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
 
   Container::Simple::Heap<HeapElement, MAX_TASKS> _heap;
   Container::Simple::List<PrivateTask, MAX_TASKS> _tasks;
-  u32 _current;
+  uint32_t _current;
 
   //! \brief Check if a date is anterior to the current date
-  inline bool isInPast(u32 date) {
-    constexpr u32 LIM = (1L << 31);
-    constexpr u32 HIG = LIM + LIM / 2;
-    constexpr u32 LOW = LIM - LIM / 2;
+  inline bool isInPast(uint32_t date) {
+	constexpr uint32_t LIM = (1L << 31);
+	constexpr uint32_t HIG = LIM + LIM / 2;
+	constexpr uint32_t LOW = LIM - LIM / 2;
 
     if(_current < LOW && date > HIG) {
       return true;
@@ -192,13 +191,13 @@ public:
   }
 
   //! \brief Return the number of slots available
-  u16 freeSlot(void) const {
+  uint16_t freeSlot(void) const {
     return _tasks.limit() - _tasks.size();
   }
 };
 
 struct DefaultSchedulerConfig {
-  static constexpr u32 MAX_TASKS = 8;
+  static constexpr uint32_t MAX_TASKS = 8;
 };
 
 template<unsigned int MAX_TASKS>

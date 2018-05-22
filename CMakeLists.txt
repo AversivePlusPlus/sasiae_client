@@ -34,5 +34,5 @@ set(SOURCE
 find_package(Qt5Core REQUIRED)
 
 include_directories(include)
-add_library(${NAME} STATIC ${SOURCE})
+add_library(${NAME} SHARED ${SOURCE})
 target_link_libraries(${NAME} Qt5::Core)

@@ -5,14 +5,12 @@ project(${NAME} CXX C ASM)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+include_directories(../include)
+link_directories(../build)
 
-link_directories("${CONAN_LIB_DIRS}")
-include_directories("${CONAN_INCLUDE_DIRS}")
+find_package(Qt5Core REQUIRED)
 
 add_executable(${NAME} main.cpp)
 
-if(CONAN_LIBS)
-  target_link_libraries(${NAME} ${CONAN_LIBS})
-endif()
+target_link_libraries(${NAME} Qt5::Core)
+target_link_libraries(${NAME} sasiae_client)

@@ -1,13 +1,12 @@
-AVERSIVEPLUSPLUS_ROOT ?= ../../../..
-CONAN ?= $(AVERSIVEPLUSPLUS_ROOT)/tools/bin/conan
+CMAKE ?= cmake
 
 EXE=_test
 
-all: build build/bin/$(EXE)
-	@touch build/bin/$(EXE)
+all: build build/$(EXE)
+	@touch build/$(EXE)
 
-test: build build/bin/$(EXE)
-	@(echo "T 100 100" && echo "S") | ./build/bin/$(EXE)
+test: build build/$(EXE)
+	@(echo "T 100 100" && echo "S") | ./build/$(EXE)
 
 clean:
 	@rm -rf build
@@ -16,12 +15,8 @@ mrproper: clean
 	@rm -f *~
 	@rm -f *.pyc
 
-build/bin/$(EXE): main.cpp build/conanbuildinfo.cmake
-	@cd build && $(CONAN) build ..
-
-build/conanbuildinfo.cmake: conanfile.py
-	@cd build && $(CONAN) install .. --build
+build/$(EXE): main.cpp
+	@cd build && $(CMAKE) .. && make
 
 build:
 	@mkdir build
-

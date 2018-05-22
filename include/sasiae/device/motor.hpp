@@ -21,17 +21,16 @@
 
 #include <sasiae/aversive.hpp>
 #include <sasiae/client_thread.hpp>
-
-#include <device/output.hpp>
+#include <sasiae/device.hpp>
 
 #include <sstream>
+
+#include <stdint.h>
 
 namespace Aversive {
 namespace Device {
   namespace SASIAE {
-    using namespace Aversive::Base;
-
-    class Motor : public ::SASIAE::Device, public Aversive::Device::Output<s32> {
+	class Motor : public ::SASIAE::Device {
     public:
       Motor(const char* name)
         : ::SASIAE::Device(name) {
@@ -42,7 +41,7 @@ namespace Device {
                            std::function<void(char*)>([&] (char*) mutable -> void {}));
       }
 
-      void put(s32 val) {
+	  void put(int32_t val) {
         std::ostringstream oss;
 
         oss << "value " << ((double)val)/128.;

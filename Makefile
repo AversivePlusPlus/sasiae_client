@@ -6,12 +6,10 @@ CMAKE ?= cmake
 
 ################################
 all: build
-	@cd build && $(CMAKE) ..
+	@cd build && $(CMAKE) .. && make
 
 ################################
-TESTS = .
-
-test: export
+TESTS =
 
 define TEST_RULE
 test: test_$(1)
@@ -19,6 +17,10 @@ test: test_$(1)
 test_$(1):
 	@cd test/$(1) && $(MAKE) -s test
 endef
+
+ifeq (,$(TESTS))
+$(eval $(call TEST_RULE,))
+endif
 
 $(foreach t,$(TESTS),$(eval $(call TEST_RULE,$(t))))
 

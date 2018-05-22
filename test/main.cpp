@@ -16,14 +16,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stream/sasiae/stream.hpp>
-#include <device/sasiae/encoder.hpp>
-#include <device/sasiae/motor.hpp>
+#include <sasiae/device/encoder.hpp>
+#include <sasiae/device/motor.hpp>
 #include <sasiae/asynchronous_updater.hpp>
 
 Aversive::Device::SASIAE::Motor m("motor");
 
-class MyAsync : public Aversive::Device::Asynchronous {
+class MyAsync {
 public:
   void update(void) {
     m.put(10);
