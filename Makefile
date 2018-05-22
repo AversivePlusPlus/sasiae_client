@@ -1,15 +1,12 @@
 PACKAGE_NAME = sasiae
-
-AVERSIVE_ROOT ?= $(PWD)/../..
-CONAN ?= $(AVERSIVE_ROOT)/tools/bin/conan
+CMAKE ?= cmake
 
 ################################
-.PHONY: arduino_package test all export
+.PHONY: test all
 
 ################################
 all: build
-	@cd build && $(CONAN) install .. --build
-	@cd build && $(CONAN) build ..
+	@cd build && $(CMAKE) ..
 
 ################################
 TESTS = .
@@ -52,15 +49,5 @@ endef
 $(foreach t,$(TESTS),$(eval $(call MRPROPER_RULE,$(t))))
 
 ################################
-SOURCES = $(find include/ -name "*.hpp")
-
-export: build/exported
-	@touch build/exported
-
-build/exported: build $(SOURCES)
-	@$(CONAN) export AversivePlusPlus/dev
-
-################################
 build:
 	@mkdir $@
-

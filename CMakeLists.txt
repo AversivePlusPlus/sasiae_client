@@ -1,15 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
-## Conan
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-
 ## Configuration
-set(NAME ${CONAN_PACKAGE_NAME})
+set(NAME sasiae_client)
 
 ## Project
 project(${NAME} CXX C ASM)
 set(CMAKE_CXX_STANDARD 11)
-conan_basic_setup()
 
 ## Interface
 file(GLOB_RECURSE INTERFACE_HPP "include/*.hpp")
