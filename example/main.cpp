@@ -15,29 +15,31 @@
     You should have received a copy of the GNU General Public License    
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include <sasiae/device/encoder.hpp>
 #include <sasiae/device/motor.hpp>
-#include <sasiae/asynchronous_updater.hpp>
+#include <sasiae/device/encoder.hpp>
 
-SASIAE::Motor m("motor");
+using namespace SASIAE;
 
-class MyAsync {
-public:
-  void update(void) {
-    m.put(10);
-  }
-};
+// Encoder devices
+Encoder left_enc("leftEnc");
+Encoder right_enc("rightEnc");
 
+// Motor devices
+Motor left_motor("leftMot");
+Motor right_motor("rightMot");
+
+// User code
 int main(int, char**) {
-  MyAsync as;
+  SASIAE::Aversive::init();
 
-  SASIAE::AsynchronousUpdaterConstructor::instance()
-      .build(as, 10)
-      .start();
+  left_motor.put(100);
+  right_motor.put(100);
 
   while(SASIAE::Aversive::sync()) {
-    }
+    int32_t left_dist = left_enc.get();
+    int32_t right_dist = right_enc.get();
+  }
 
   return 0;
 }
+

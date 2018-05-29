@@ -27,33 +27,30 @@
 
 #include <stdint.h>
 
-namespace Aversive {
-namespace Device {
-  namespace SASIAE {
-	class Motor : public ::SASIAE::Device {
-    public:
-      Motor(const char* name)
-        : ::SASIAE::Device(name) {
-        ::SASIAE::Aversive::init();
+namespace SASIAE {
 
-        ::SASIAE::ClientThread::instance().
-            registerDevice(*this,
-                           std::function<void(char*)>([&] (char*) mutable -> void {}));
-      }
+class Motor : public ::SASIAE::Device {
+public:
+  Motor(const char* name)
+    : ::SASIAE::Device(name) {
+    ::SASIAE::Aversive::init();
 
-	  void put(int32_t val) {
-        std::ostringstream oss;
-
-        oss << "value " << ((double)val)/128.;
-
-        ::SASIAE::ClientThread::instance().
-            sendDeviceMessage(*this,
-                              oss.str().c_str());
-      }
-
-    };
+    ::SASIAE::ClientThread::instance().
+        registerDevice(*this,
+                       std::function<void(char*)>([&] (char*) mutable -> void {}));
   }
-}
+
+  void put(int32_t val) {
+    std::ostringstream oss;
+
+    oss << "value " << ((double)val)/128.;
+
+    ::SASIAE::ClientThread::instance().
+        sendDeviceMessage(*this,
+                          oss.str().c_str());
+  }
+};
+
 }
 
 #endif//SASIAE_MOTOR_HPP

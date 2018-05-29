@@ -26,58 +26,54 @@
 #include <sstream>
 #include <stdint.h>
 
-namespace Aversive {
-namespace Device {
-  namespace SASIAE {
-	class Encoder : public ::SASIAE::Device {
-    private:
-	  int32_t _val;
+namespace SASIAE {
+class Encoder : public ::SASIAE::Device {
+private:
+  int32_t _val;
 
-    public:
-	  void get_value_from_msg(int32_t* dest, const char* msg) {
-        long long in;
-		sscanf(msg, "%lld", &in);
-		*dest = (int32_t)in;
-      }
-
-	  Encoder(const char* name) : Device(name) {
-
-        ::SASIAE::Aversive::init();
-        _val = 0;
-
-        ::SASIAE::ClientThread::instance().
-            registerDevice(*this,
-                           std::function<void(char*)>([&] (char* msg) mutable -> void {
-            using namespace std;
-            string cmd;
-            long long val;
-            istringstream iss(msg);
-
-            iss >> cmd;
-
-            if(cmd == "value") {
-                iss >> val;
-                _val = val;
-              }
-            else {
-                ::SASIAE::ClientThread::instance().sendMessage(
-                      ::SASIAE::ClientThread::ERROR,
-                      "unable to parse message correctly"
-                      );
-              }
-          }));
-
-        ::SASIAE::ClientThread::instance().
-            sendDeviceMessage(*this, "init");
-      }
-
-	  int32_t get(void) {
-        return _val;
-      }
-
-    };
+public:
+  void get_value_from_msg(int32_t* dest, const char* msg) {
+    long long in;
+    sscanf(msg, "%lld", &in);
+    *dest = (int32_t)in;
   }
-}
+
+  Encoder(const char* name) : Device(name) {
+
+    ::SASIAE::Aversive::init();
+    _val = 0;
+
+    ::SASIAE::ClientThread::instance().
+        registerDevice(*this,
+                       std::function<void(char*)>([&] (char* msg) mutable -> void {
+      using namespace std;
+      string cmd;
+      long long val;
+      istringstream iss(msg);
+
+      iss >> cmd;
+
+      if(cmd == "value") {
+        iss >> val;
+        _val = val;
+      }
+      else {
+        ::SASIAE::ClientThread::instance().sendMessage(
+              ::SASIAE::ClientThread::ERROR,
+              "unable to parse message correctly"
+              );
+      }
+    }));
+
+    ::SASIAE::ClientThread::instance().
+        sendDeviceMessage(*this, "init");
+  }
+
+  int32_t get(void) {
+    return _val;
+  }
+
+};
 }
 
 #endif//SASIAE_ENCODER_HPP
