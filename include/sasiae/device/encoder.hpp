@@ -39,8 +39,6 @@ public:
   }
 
   Encoder(const char* name) : Device(name) {
-
-    ::SASIAE::Aversive::init();
     _val = 0;
 
     ::SASIAE::ClientThread::instance().

@@ -30,14 +30,12 @@ Motor right_motor("rightMot");
 
 // User code
 int main(int, char**) {
-  SASIAE::Aversive::init();
 
-  left_motor.put(100);
-  right_motor.put(100);
-
-  while(SASIAE::Aversive::sync()) {
+  while(SASIAE::sync()) {
     int32_t left_dist = left_enc.get();
     int32_t right_dist = right_enc.get();
+    left_motor.put(100);
+    right_motor.put(100);
   }
 
   return 0;

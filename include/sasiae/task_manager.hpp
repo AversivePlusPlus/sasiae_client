@@ -202,7 +202,6 @@ struct DefaultSchedulerConfig {
 
 template<unsigned int MAX_TASKS>
 TaskManager<MAX_TASKS>::TaskManager(void) {
-  Aversive::init();
   _current = 0;
 
   ClientThread::instance().setSyncFunction([&](long long t){

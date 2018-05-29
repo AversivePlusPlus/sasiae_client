@@ -31,7 +31,7 @@
 namespace SASIAE {
 
   //! \brief ClientThread handles the communication between SASIAE and the different devices
-  class ClientThread : protected QThread {
+  class ClientThread : public QThread {
   private:
     void expandBuffer(void);
     void readLine(void);
@@ -55,17 +55,15 @@ namespace SASIAE {
 
     std::function<void(int)> _sync_func;
 
-    static ClientThread* _inst;
-
     ClientThread(void);
     virtual ~ClientThread(void);
 
     void quit(void);
     void run(void) override;
 
-    void sync(void);
-
   public:
+    bool sync(void);
+
     //! \brief Raw data sent to SASIAE
     //! \brief The function adds a '\n' to the message, therefore the device does not have to do it
     //! \param data : the complete message to send to SASIAE, must be a zero-terminated string
@@ -101,7 +99,10 @@ namespace SASIAE {
 
     //! \brief Get the unique instance of the Client Thread
     //! \warning Should not be called before Aversive::init !
-    static ClientThread& instance(void);
+    static ClientThread& instance(void) {
+      static ClientThread ret;
+      return ret;
+    }
 
     unsigned long int time() const;
   };

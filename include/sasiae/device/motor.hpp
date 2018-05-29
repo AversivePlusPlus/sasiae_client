@@ -33,7 +33,6 @@ class Motor : public ::SASIAE::Device {
 public:
   Motor(const char* name)
     : ::SASIAE::Device(name) {
-    ::SASIAE::Aversive::init();
 
     ::SASIAE::ClientThread::instance().
         registerDevice(*this,
