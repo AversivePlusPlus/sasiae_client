@@ -18,6 +18,8 @@
 #include <sasiae/device/motor.hpp>
 #include <sasiae/device/encoder.hpp>
 
+#include <iostream>
+
 using namespace SASIAE;
 
 // Encoder devices
@@ -29,13 +31,14 @@ Motor left_motor("leftMot");
 Motor right_motor("rightMot");
 
 // User code
-int main(int, char**) {
+int main(int argc, char* argv[]) {
+  SASIAE::init(argc, argv);
 
   while(SASIAE::sync()) {
     int32_t left_dist = left_enc.get();
     int32_t right_dist = right_enc.get();
-    left_motor.put(-100);
-    right_motor.put(-100);
+    left_motor.put(10000 - left_dist);
+    right_motor.put(10000 - right_dist);
   }
 
   return 0;

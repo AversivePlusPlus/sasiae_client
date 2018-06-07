@@ -43,7 +43,7 @@ public:
 
     ClientThread::instance().
         registerDevice(*this,
-                       std::function<void(char*)>([&] (char* msg) mutable -> void {
+                       std::function<void(const char*)>([&] (const char* msg) mutable -> void {
       using namespace std;
       string cmd;
       long long val;

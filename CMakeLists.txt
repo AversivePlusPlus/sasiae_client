@@ -32,7 +32,9 @@ set(SOURCE
   )
 
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Network REQUIRED)
 
 include_directories(include)
 add_library(${NAME} SHARED ${SOURCE})
 target_link_libraries(${NAME} Qt5::Core)
+target_link_libraries(${NAME} Qt5::Network)

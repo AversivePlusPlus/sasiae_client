@@ -18,14 +18,24 @@
 
 #include <sasiae/client_thread.hpp>
 #include <sasiae/sasiae.hpp>
+
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+
 #include <unistd.h>
+
+#include <QCommandLineParser>
+#include <QCoreApplication>
+
+#include <QHostAddress>
+#include <QTcpSocket>
 
 namespace SASIAE {
 
-static const int DEFAULT_BUFFER_SIZE = 64;
+static QTextStream* _out = NULL;
+static QTextStream* _in = NULL;
+static QMutex _com_mutex;
 
 static const char* const err_detect_device = "Impossible to detect device's name";
 static const char* const err_unknown_device = "Unknown device \"%s\"";
@@ -34,42 +44,24 @@ static const char* const err_invalid_synchro = "Invalid synchro message";
 
 ClientThread::ClientThread(void) : QThread() {
   _keep_going = true;
-  _buffer = new char[DEFAULT_BUFFER_SIZE];
-  _length = DEFAULT_BUFFER_SIZE;
   _time = 0;
   _sync_func = NULL;
   _timed_task_done = _synchronized = true;
+
+  if(!_out) {
+    QString* str = new QString();
+    _out = new QTextStream(str);
+  }
+
+  if(!_in) {
+    QString* str = new QString();
+    _in = new QTextStream(str);
+  }
 
   start();
 }
 
 ClientThread::~ClientThread(void) {
-  delete[] _buffer;
-}
-
-void ClientThread::expandBuffer(void) {
-  char* new_buffer = new char[_length * 2];
-  memset(new_buffer, 0, _length * 2);
-  memcpy(new_buffer, _buffer, _length);
-  _length *= 2;
-  delete _buffer;
-  _buffer = new_buffer;
-}
-
-void ClientThread::readLine(void) {
-  unsigned int i = 0;
-  int c;
-  while((c = getchar()) && c != '\n' && c != -1) {
-    _buffer[i++] = (char) c;
-    if(i >= _length) {
-      expandBuffer();
-    }
-  }
-  _buffer[i] = '\0';
-  if(c == -1) {
-    _keep_going = false;
-    quit();
-  }
 }
 
 void ClientThread::quit(void) {
@@ -78,47 +70,35 @@ void ClientThread::quit(void) {
 
 void ClientThread::run(void) {
   while(_keep_going) {
-    readLine();
-    if(!_keep_going) {
-      break;
-    }
+    _buffer = _in->readLine();
+    QStringList args = _buffer.split(" ");
 
-    if(_buffer[0] == '\0') {
-    }
-    else if(_buffer[0] == 'T') {
+    if(args[0] == "T") {
       // Synchronization message
-      if(_buffer[1] != ' ') {
+      if(args.length() != 3) {
         sendMessage(ERROR, err_invalid_synchro);
         continue;
       }
 
-      char* ptr = _buffer + 2;
-      while(isdigit(*ptr)) {
-        ++ptr;
-      }
+      bool ok = true;
 
-      if(*ptr != ' ') {
+      _time = args[1].toULong(&ok);
+      if(!ok) {
         sendMessage(ERROR, err_invalid_synchro);
         continue;
       }
 
-      char* second_field = ++ptr;
-      while(isdigit(*ptr)) {
-        ++ptr;
-      }
-
-      if(*ptr != '\0') {
+      int iteration_num = args[2].toInt(&ok);
+      if(!ok) {
         sendMessage(ERROR, err_invalid_synchro);
         continue;
       }
 
-      _time = strtoul(_buffer + 2, NULL, 10);
-      int it = (int) strtol(second_field, NULL, 10);
       _timed_task_done = false;
       _synchronized = false;
 
       // We let the robot loop iterating for some time
-      _iteration.release(it);
+      _iteration.release(iteration_num);
 
       // We execute the scheduler
       if(_sync_func) {
@@ -134,40 +114,31 @@ void ClientThread::run(void) {
       }
       _sync_mutex.unlock();
     }
-    else if(_buffer[0] == 'D') {
-      // Device message
-      int b = 2, e = 2;
-      while(_buffer[e++] != ' ' && _buffer[e] != '\0');
-      if(_buffer[e] == '\0') {
-        // Impossible to detect device's name
-        snprintf(_buffer, (size_t) _length, err_detect_device);
-        sendMessage(ERROR, _buffer);
+    else if(args[0] == "D") {
+      if(args.length() < 2) {
+        sendMessage(ERROR, err_detect_device);
         continue;
       }
 
-      char* name = new char[e - b];
-      memcpy(name, _buffer + 2, e - b);
-      name[e - b - 1] = '\0';
+      const char* name = args[1].toStdString().c_str();
 
       _devices_mutex.lock();
       if(!_devices.contains(name)) {
         // Unknown device
-        _devices_mutex.unlock();
-        snprintf(_buffer, (size_t) _length, err_unknown_device, name);
-        sendMessage(ERROR, _buffer);
+        sendMessage(ERROR, err_unknown_device);
       }
       else {
         // Device is known, we give its interpreter function the message
-        const std::function<void(char*)>& interpreter = _devices[name];
-        _devices_mutex.unlock();
-        interpreter(_buffer + e);
+        args.removeFirst();
+        args.removeFirst();
+        _devices[name](args.join(" ").toStdString().c_str());
       }
-      delete[] name;
+      _devices_mutex.unlock();
     }
-    else if(_buffer[0] == 'B') {
+    else if(args[0] == "B") {
       // Begin match message
     }
-    else if(_buffer[0] == 'S') {
+    else if(args[0] == "S") {
       // Stop message
       _keep_going = false;
       // To unblock the main thread if it's waiting
@@ -175,9 +146,6 @@ void ClientThread::run(void) {
     }
     else {
       // Unknown command
-      char cmd = _buffer[0];
-      snprintf(_buffer, (size_t) _length, err_unknown_command, cmd);
-      sendMessage(ERROR, _buffer);
     }
   }
 }
@@ -198,8 +166,8 @@ bool ClientThread::sync(void) {
 
 bool ClientThread::sendData(const char* data) {
   _com_mutex.lock();
-  std::cout << data << "\n";
-  std::cout.flush();
+  (*_out) << data << endl;
+  _out->flush();
   _com_mutex.unlock();
   return true;
 }
@@ -228,7 +196,7 @@ bool ClientThread::sendMessage(MessageLevel lvl, const char* msg) {
   return sendData((std::string("M ") + msg_lvl + " " + msg).c_str());
 }
 
-bool ClientThread::registerDevice(const Device& dev, const std::function<void(char*)>& interpreter) {
+bool ClientThread::registerDevice(const Device& dev, const std::function<void(const char*)> & interpreter) {
   QString device = dev.name();
   _devices_mutex.lock();
   if(_devices.contains(device)) {
@@ -252,9 +220,52 @@ unsigned long int ClientThread::time() const {
   return _time;
 }
 
+static void _replace_out(QTextStream* new_out) {
+  _com_mutex.lock();
+  if(_out) {
+    if(_out->string()) {
+      (*new_out) << *(_out->string());
+      delete(_out->string());
+    }
+    delete(_out);
+  }
+  _out = new_out;
+  _out->flush();
+  _com_mutex.unlock();
 }
 
-bool SASIAE::sync(void) {
+static void _replace_in(QTextStream* new_in) {
+  if(_in) {
+    if(_in->string()) {
+      delete(_in->string());
+    }
+    delete(_in);
+  }
+  _in = new_in;
+}
+
+void init(int argc, char *argv[]) {
+  QCoreApplication app(argc, argv);
+  QCommandLineParser parser;
+
+  QCommandLineOption addr_option(QStringList() << "s" << "server", "Server address", "address");
+  parser.addOption(addr_option);
+
+  QCommandLineOption port_option(QStringList() << "p" << "port", "Server port", "port");
+  parser.addOption(port_option);
+
+  parser.parse(app.arguments());
+
+  if(parser.isSet(addr_option)) {
+  }
+  else {
+    _replace_out(new QTextStream(stdout, QIODevice::WriteOnly));
+    _replace_in(new QTextStream(stdin, QIODevice::ReadOnly));
+  }
+}
+
+bool sync(void) {
   return ClientThread::instance().sync();
 }
 
+}

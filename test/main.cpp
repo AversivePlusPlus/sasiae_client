@@ -37,8 +37,10 @@ public:
   }
 };
 
-int main(int, char**) {
-  MyAsync as;
+MyAsync as;
+
+int main(int argc, char** argv) {
+  SASIAE::init(argc, argv);
 
   while(SASIAE::sync()) {
   }

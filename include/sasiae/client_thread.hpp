@@ -19,11 +19,13 @@
 #ifndef CLIENT_THREAD_HPP
 #define CLIENT_THREAD_HPP
 
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
-#include <QtCore/QSemaphore>
-#include <QtCore/QMap>
-#include <QtCore/QString>
+#include <QThread>
+#include <QMutex>
+#include <QSemaphore>
+#include <QMap>
+#include <QString>
+#include <QTextStream>
+
 #include <functional>
 
 #include <sasiae/device.hpp>
@@ -39,9 +41,7 @@ namespace SASIAE {
   protected:
     bool _keep_going;
 
-    char* _buffer;
-    unsigned long _length;
-    QMutex _com_mutex;
+    QString _buffer;
 
     unsigned long int _time;
     QSemaphore _iteration;
@@ -50,7 +50,7 @@ namespace SASIAE {
     bool _synchronized;
     QMutex _sync_mutex;
 
-    QMap<QString, std::function<void(char*)> > _devices;
+    QMap<QString, std::function<void(const char*)> > _devices;
     QMutex _devices_mutex;
 
     std::function<void(int)> _sync_func;
@@ -93,7 +93,7 @@ namespace SASIAE {
     //! \param name : the device's name (id)
     //! \param interpreter : the thread-safe function that interprets the message intended to the given device
     //! \return True on success, false otherwise
-    bool registerDevice(const Device& dev, const std::function<void(char*)>& interpreter);
+    bool registerDevice(const Device& dev, const std::function<void(const char*)>& interpreter);
 
     bool setSyncFunction(const std::function<void(int)>& interpreter);
 

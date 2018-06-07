@@ -21,6 +21,9 @@
 
 namespace SASIAE {
 
+//! \brief Init SASIAE.
+void init(int argc, char* argv[]);
+
 //! \brief Synchronize the main while loop(s).
 //! \return Boolean telling if the application must keep running.
 bool sync(void);

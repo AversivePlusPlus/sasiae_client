@@ -36,7 +36,7 @@ public:
 
     ClientThread::instance().
         registerDevice(*this,
-                       std::function<void(char*)>([&] (char*) mutable -> void {}));
+                       std::function<void(const char*)>([&] (const char*) mutable -> void {}));
   }
 
   void put(int32_t val) {
