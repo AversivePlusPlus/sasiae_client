@@ -20,29 +20,30 @@
 #define SCHEDULER_HPP
 
 #include <sasiae/utils/singleton.hpp>
-
-#include <sasiae/utils/heap.hpp>
-#include <sasiae/utils/list.hpp>
-
 #include <sasiae/task.hpp>
-
 #include <sasiae/client_thread.hpp>
 
 namespace SASIAE {
 
 //! \brief System to enable the robot to execute some tasks periodically, using interruptions
-template<unsigned int MAX_TASKS>
-class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
+class TaskManager : public Singleton<TaskManager> {
   friend class Singleton<TaskManager>;
 
   //! \brief Default Constructor (implementation dependent)
-  TaskManager(void);
+  TaskManager(void) {
+    _current = 0;
+
+    ClientThread::instance().setSyncFunction([&](long long t){
+      _current = t;
+      processTasks();
+    });
+  }
 
   //! \brief Disable interrupts
-  void lock(void);
+  void lock(void) {}
 
   //! \brief Cancel the effect of lock
-  void unlock(void);
+  void unlock(void) {}
 
   //! \brief A task with more information used by the scheduler
   class PrivateTask : public Task {
@@ -91,37 +92,9 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
     void setNextCall(uint32_t val) {
       _next_call += val;
     }
-
-    //! \brief Return the priority of the task
-    uint8_t priority(void) {
-      return _priority;
-    }
   };
 
-  //! \brief Encapsulate the PrivateTask into an interface usable with the Heap
-  class HeapElement {
-    PrivateTask* _task;
-
-  public:
-    HeapElement(void)
-      : _task(0) {
-    }
-
-    HeapElement(PrivateTask& tsk)
-      : _task(&tsk) {
-    }
-
-    bool operator<(const HeapElement& other) {
-      return _task->nextCall() > other._task->nextCall()
-          || ((_task->nextCall() == other._task->nextCall())
-              && (_task->priority() < other._task->priority()));
-    }
-
-    PrivateTask& task(void) const { return *_task; }
-  };
-
-  Container::Simple::Heap<HeapElement, MAX_TASKS> _heap;
-  Container::Simple::List<PrivateTask, MAX_TASKS> _tasks;
+  QList<PrivateTask> _tasks;
   uint32_t _current;
 
   //! \brief Check if a date is anterior to the current date
@@ -144,17 +117,10 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
   //! \brief Execute current tasks
   inline void processTasks(void) {
     lock();
-    while(!_heap.empty() && isInPast(_heap.head().task().nextCall())) {
-      HeapElement e = _heap.head();
-      e.task().operator ()();
-      _heap.pop();
-
-      if(e.task().isUnique()) {
-        rmTask(e.task());
-      }
-      else {
-        e.task().setNextCall();
-        _heap.push(e);
+    for(QList<PrivateTask>::Iterator it = _tasks.begin() ; it != _tasks.end() ; it++) {
+      while(it->period() != 0 && isInPast(it->nextCall())) {
+        (*it)();
+        it->setNextCall();
       }
     }
     unlock();
@@ -164,61 +130,12 @@ public:
   //! \brief Add a task to execute
   void addTask(Task& tsk) {
     lock();
-    if(!_tasks.full()) {
-      _tasks.insert(_tasks.size(), tsk);
-      PrivateTask& ptsk = *(_tasks.begin()+(_tasks.size()-1));
-      ptsk.setNextCall(_current + ptsk.period());
-      TaskManager::instance()._heap.push(HeapElement(ptsk));
-    }
+    _tasks.insert(_tasks.size(), tsk);
+    PrivateTask& ptsk = *(_tasks.begin()+(_tasks.size()-1));
+    ptsk.setNextCall(_current + ptsk.period());
     unlock();
   }
-
-  //! \brief Remove a Task
-  void rmTask(Task& tsk) {
-    lock();
-    TaskManager::instance()._heap.flush();
-    auto rm = _tasks.end();
-    for(auto it = _tasks.begin() ; it != _tasks.end() ; it++) {
-      if(tsk == *it) {
-        rm = it;
-      }
-      else {
-        TaskManager::instance()._heap.push(HeapElement(*it));
-      }
-    }
-    _tasks.remove(rm - _tasks.begin());
-    unlock();
-  }
-
-  //! \brief Return the number of slots available
-  uint16_t freeSlot(void) const {
-    return _tasks.limit() - _tasks.size();
-  }
 };
-
-struct DefaultSchedulerConfig {
-  static constexpr uint32_t MAX_TASKS = 8;
-};
-
-template<unsigned int MAX_TASKS>
-TaskManager<MAX_TASKS>::TaskManager(void) {
-  _current = 0;
-
-  ClientThread::instance().setSyncFunction([&](long long t){
-    _current = t;
-    processTasks();
-  });
-}
-
-template<unsigned int MAX_TASKS>
-inline void TaskManager<MAX_TASKS>::lock(void) {
-
-}
-
-template<unsigned int MAX_TASKS>
-inline void TaskManager<MAX_TASKS>::unlock(void) {
-
-}
 
 }
 

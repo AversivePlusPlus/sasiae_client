@@ -29,8 +29,7 @@ public:
   MyAsync(void)
     : _task(this), _motor("motor") {
     _task.setPeriod(10);
-    _task.setRepeat();
-    SASIAE::TaskManager<1>::instance().addTask(_task);
+    SASIAE::TaskManager::instance().addTask(_task);
   }
 
   void update(void) {

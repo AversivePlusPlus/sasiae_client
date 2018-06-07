@@ -30,40 +30,35 @@ protected:
   void* _arg;
 
   uint32_t _period;
-  uint8_t _priority;
-  bool _unique;
 
 public:
   //! \brief Default constructor
   inline Task(void)
-    : _func(0), _arg(0), _period(0), _priority(0), _unique(true) {
+    : _func(0), _arg(0), _period(0) {
   }
 
   //! \brief Task constructor
   inline Task(void (*func)(void*), void* arg)
     : _func(func), _arg(arg),
-      _period(0), _priority(0), _unique(true) {
+      _period(0) {
   }
 
   //! \brief Task constructor
   template<class Updatable>
   inline Task(Updatable* obj)
     : _func([](void* arg){ ((Updatable*)arg)->update(); }), _arg((void*)obj),
-      _period(0), _priority(0), _unique(true) {
+      _period(0) {
   }
 
   //! \brief Copy Constructor
   inline Task(const Task& other)
-    : _func(other._func), _arg(other._arg), _period(other._period),
-      _priority(other._priority), _unique(other._unique) {
+    : _func(other._func), _arg(other._arg), _period(other._period) {
   }
 
   //! \brief Copy operation
   inline Task& operator=(const Task& other) {
     _func = other._func;
     _period = other._period;
-    _priority = other._priority;
-    _unique = other._unique;
     return *this;
   }
 
@@ -72,33 +67,8 @@ public:
     _period = period_us;
   }
 
-  //! \brief Set the priority of the task
-  /*!
-
-    If two tasks may be executed at the same time, the first to be
-    called is the one with the greatest priority
-
-  */
-  inline void setPriority(uint8_t priority) {
-    _priority = priority;
-  }
-
-  //! \brief Enable periodicity
-  inline void setRepeat(void) {
-    _unique = false;
-  }
-
-  //! \brief Disable periodicity, the task will be removed once executed
-  inline void setUnique(void) {
-    _unique = true;
-  }
-
   inline uint32_t period(void) const {
     return _period;
-  }
-
-  inline bool isUnique(void) const {
-    return _unique;
   }
 
   inline bool operator==(const Task& other) const {
