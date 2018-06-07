@@ -19,7 +19,7 @@
 #ifndef SASIAE_ENCODER_HPP
 #define SASIAE_ENCODER_HPP
 
-#include <sasiae/aversive.hpp>
+#include <sasiae/sasiae.hpp>
 #include <sasiae/client_thread.hpp>
 #include <sasiae/device.hpp>
 
@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 namespace SASIAE {
-class Encoder : public ::SASIAE::Device {
+class Encoder : public Device {
 private:
   int32_t _val;
 
@@ -41,7 +41,7 @@ public:
   Encoder(const char* name) : Device(name) {
     _val = 0;
 
-    ::SASIAE::ClientThread::instance().
+    ClientThread::instance().
         registerDevice(*this,
                        std::function<void(char*)>([&] (char* msg) mutable -> void {
       using namespace std;
@@ -56,14 +56,14 @@ public:
         _val = val;
       }
       else {
-        ::SASIAE::ClientThread::instance().sendMessage(
-              ::SASIAE::ClientThread::ERROR,
+        ClientThread::instance().sendMessage(
+              ClientThread::ERROR,
               "unable to parse message correctly"
               );
       }
     }));
 
-    ::SASIAE::ClientThread::instance().
+    ClientThread::instance().
         sendDeviceMessage(*this, "init");
   }
 

@@ -34,8 +34,8 @@ int main(int, char**) {
   while(SASIAE::sync()) {
     int32_t left_dist = left_enc.get();
     int32_t right_dist = right_enc.get();
-    left_motor.put(100);
-    right_motor.put(100);
+    left_motor.put(-100);
+    right_motor.put(-100);
   }
 
   return 0;

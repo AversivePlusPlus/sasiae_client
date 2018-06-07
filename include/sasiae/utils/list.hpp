@@ -33,7 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 
-namespace Aversive {
 namespace Container {
 namespace Simple {
 
@@ -153,7 +152,6 @@ public:
   }
 };
 
-}
 }
 }
 

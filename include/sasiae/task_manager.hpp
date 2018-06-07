@@ -47,7 +47,7 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
   //! \brief A task with more information used by the scheduler
   class PrivateTask : public Task {
   private:
-	uint32_t _next_call;
+    uint32_t _next_call;
   public:
     //! \brief Default constructor
     PrivateTask(void)
@@ -78,7 +78,7 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
     }
 
     //! \brief Get the next call date
-	uint32_t nextCall(void) const {
+    uint32_t nextCall(void) const {
       return _next_call;
     }
 
@@ -88,12 +88,12 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
     }
 
     //! \brief Add a value to the next call date
-	void setNextCall(uint32_t val) {
+    void setNextCall(uint32_t val) {
       _next_call += val;
     }
 
     //! \brief Return the priority of the task
-	uint8_t priority(void) {
+    uint8_t priority(void) {
       return _priority;
     }
   };
@@ -126,9 +126,9 @@ class TaskManager : public Singleton<TaskManager<MAX_TASKS>> {
 
   //! \brief Check if a date is anterior to the current date
   inline bool isInPast(uint32_t date) {
-	constexpr uint32_t LIM = (1L << 31);
-	constexpr uint32_t HIG = LIM + LIM / 2;
-	constexpr uint32_t LOW = LIM - LIM / 2;
+    constexpr uint32_t LIM = (1L << 31);
+    constexpr uint32_t HIG = LIM + LIM / 2;
+    constexpr uint32_t LOW = LIM - LIM / 2;
 
     if(_current < LOW && date > HIG) {
       return true;

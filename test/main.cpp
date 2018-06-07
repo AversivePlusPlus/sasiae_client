@@ -18,23 +18,28 @@
 
 #include <sasiae/device/encoder.hpp>
 #include <sasiae/device/motor.hpp>
-#include <sasiae/asynchronous_updater.hpp>
-
-SASIAE::Motor m("motor");
+#include <sasiae/task_manager.hpp>
 
 class MyAsync {
+private:
+  SASIAE::Motor _motor;
+  SASIAE::Task _task;
+
 public:
+  MyAsync(void)
+    : _task(this), _motor("motor") {
+    _task.setPeriod(10);
+    _task.setRepeat();
+    SASIAE::TaskManager<1>::instance().addTask(_task);
+  }
+
   void update(void) {
-    m.put(10);
+    _motor.put(10);
   }
 };
 
 int main(int, char**) {
   MyAsync as;
-
-  SASIAE::AsynchronousUpdaterConstructor::instance()
-      .build(as, 10)
-      .start();
 
   while(SASIAE::sync()) {
   }

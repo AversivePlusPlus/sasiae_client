@@ -19,7 +19,7 @@
 #ifndef SASIAE_MOTOR_HPP
 #define SASIAE_MOTOR_HPP
 
-#include <sasiae/aversive.hpp>
+#include <sasiae/sasiae.hpp>
 #include <sasiae/client_thread.hpp>
 #include <sasiae/device.hpp>
 
@@ -29,12 +29,12 @@
 
 namespace SASIAE {
 
-class Motor : public ::SASIAE::Device {
+class Motor : public Device {
 public:
   Motor(const char* name)
-    : ::SASIAE::Device(name) {
+    : Device(name) {
 
-    ::SASIAE::ClientThread::instance().
+    ClientThread::instance().
         registerDevice(*this,
                        std::function<void(char*)>([&] (char*) mutable -> void {}));
   }
@@ -44,7 +44,7 @@ public:
 
     oss << "value " << ((double)val)/128.;
 
-    ::SASIAE::ClientThread::instance().
+    ClientThread::instance().
         sendDeviceMessage(*this,
                           oss.str().c_str());
   }
